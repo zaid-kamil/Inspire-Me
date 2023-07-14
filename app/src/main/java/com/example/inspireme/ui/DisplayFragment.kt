@@ -1,11 +1,19 @@
 package com.example.inspireme.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
+import com.example.inspireme.AuthActivity
+import com.example.inspireme.R
 import com.example.inspireme.databinding.FragmentDisplayBinding
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -17,6 +25,11 @@ class DisplayFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
+    private val auth by lazy { Firebase.auth }
+    private val db by lazy { Firebase.firestore }
+    private val cloudViewModel: CloudViewModel by activityViewModels {
+        CloudViewModelFactory(auth, db)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -24,12 +37,31 @@ class DisplayFragment : Fragment() {
     ): View {
 
         _binding = FragmentDisplayBinding.inflate(inflater, container, false)
+        binding.cloudViewModel = cloudViewModel
+        binding.lifecycleOwner = this
         return binding.root
 
     }
 
+    override fun onStart() {
+        super.onStart()
+        cloudViewModel.checkAuthentication()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        cloudViewModel.authState.observe(viewLifecycleOwner) {
+            if (it != AuthState.AUTHENTICATED) {
+                startActivity(Intent(requireContext(), AuthActivity::class.java))
+                requireActivity().finish()
+            }
+        }
+        cloudViewModel.postLoadingStatus.observe(viewLifecycleOwner) {
+
+        }
+        binding.floatingActionButton.setOnClickListener {
+            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
+        }
     }
 
     override fun onDestroyView() {
