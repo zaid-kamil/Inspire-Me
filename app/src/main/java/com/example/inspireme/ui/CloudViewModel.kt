@@ -25,13 +25,17 @@ class CloudViewModel(
     private val _msg = MutableLiveData<String>()
     val msg get() = _msg
 
-    fun currentUser() = auth.currentUser
-    fun signOut() = auth.signOut()
+    private val _posts = MutableLiveData<List<Post>>()
+    val posts get() = _posts
+
+    private fun currentUser() = auth.currentUser
+
     fun getPosts() = db.collection("posts").get().addOnFailureListener {
         invalidTask(it.message)
     }.addOnSuccessListener {
+        _posts.value = it.toObjects(Post::class.java)
         _postLoadingStatus.value = PostLoadingStatus.SUCCESS
-        _msg.value = "Successfully loaded posts"
+        _msg.value = "Successfully loaded posts ✅"
     }
 
     private fun uploadPost(post: Post) {
@@ -40,12 +44,13 @@ class CloudViewModel(
             invalidTask(it.message)
         }.addOnSuccessListener {
             _postUploadStatus.value = PostUploadStatus.SUCCESS
-            _msg.value = "Successfully uploaded post"
+            _msg.value = "Successfully added post ✅"
         }
     }
 
     private fun invalidTask(message: String?) {
         _postLoadingStatus.value = PostLoadingStatus.FAILURE
+        _postUploadStatus.value = PostUploadStatus.FAILURE
         _msg.value = message.toString()
     }
 
@@ -56,6 +61,7 @@ class CloudViewModel(
                 Post(
                     title,
                     description,
+                    timestamp = System.currentTimeMillis(),
                     username = currentUser()?.displayName!!,
                     uid = currentUser()?.uid!!
                 )

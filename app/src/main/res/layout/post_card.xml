@@ -14,7 +14,7 @@
         android:layout_margin="8dp"
         android:alpha=".9"
         app:cardElevation="6dp"
-        app:contentPadding="8dp">
+        app:contentPadding="16dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -26,8 +26,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-medium"
                 android:text="@{post.title}"
-                android:textAlignment="center"
-                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -39,9 +38,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:autoLink="all"
-                android:drawableLeft="@drawable/baseline_insights_24"
                 android:drawablePadding="16dp"
-                android:fontFamily="sans-serif-light"
+                android:fontFamily="sans-serif"
                 android:text="@{post.content}"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -53,8 +51,9 @@
                 android:id="@+id/textView4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:drawableLeft="@drawable/baseline_person_24"
-                android:drawablePadding="16dp"
+                android:fontFamily="sans-serif-light"
                 android:gravity="center_vertical"
                 android:text="@{post.username}"
                 app:layout_constraintStart_toStartOf="parent"
@@ -63,12 +62,13 @@
 
             <TextView
                 android:id="@+id/textView5"
+                format_time="@{post.timestamp}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:drawableLeft="@drawable/baseline_access_time_24"
-                android:drawablePadding="16dp"
+                android:fontFamily="sans-serif-light"
                 android:gravity="center_vertical"
-                format_time="@{post.timestamp}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView3"
                 tools:text="Date and time" />
