@@ -78,6 +78,7 @@ class DisplayFragment : Fragment() {
         }
 
         binding.floatingActionButton.setOnClickListener {
+            cloudViewModel.msg.value = ""
             findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
         }
     }
