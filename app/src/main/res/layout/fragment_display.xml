@@ -6,8 +6,8 @@
     <data>
 
         <variable
-            name="cloudViewModel"
-            type="com.example.inspireme.ui.CloudViewModel" />
+            name="vm"
+            type="com.example.inspireme.ui.FirebaseViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

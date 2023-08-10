@@ -7,8 +7,8 @@
     <data>
 
         <variable
-            name="authViewModel"
-            type="com.example.inspireme.ui.AuthViewModel" />
+            name="vm"
+            type="com.example.inspireme.ui.CloudAuthViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -107,7 +107,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/editPasswordWrapper"
-            android:text="@{authViewModel.authMsg}"
+            android:text="@{vm.authMsg}"
             android:textColor="@color/design_default_color_error"
             tools:text="Status Message" />
 

@@ -10,7 +10,7 @@ enum class AuthState {
     AUTHENTICATED, UNAUTHENTICATED, INVALID_AUTHENTICATION
 }
 
-class AuthViewModel(private val auth: FirebaseAuth) : ViewModel() {
+class CloudAuthViewModel(private val auth: FirebaseAuth) : ViewModel() {
 
     private val _authState = MutableLiveData<AuthState>(AuthState.UNAUTHENTICATED)
     val authState get() = _authState
@@ -18,14 +18,14 @@ class AuthViewModel(private val auth: FirebaseAuth) : ViewModel() {
     private val _authMsg = MutableLiveData<String>()
     val authMsg get() = _authMsg
 
-    private fun signIn(email: String, password: String) =
+    private fun firebaseSignIn(email: String, password: String) =
         auth.signInWithEmailAndPassword(email, password).addOnFailureListener {
             invalidAuth(it.message)
         }.addOnSuccessListener {
             _authState.value = AuthState.AUTHENTICATED
         }
 
-    private fun signUp(username: String, email: String, password: String) =
+    private fun firebaseSignUp(username: String, email: String, password: String) =
         auth.createUserWithEmailAndPassword(email, password).addOnSuccessListener {
             _authState.value = AuthState.AUTHENTICATED
             // update user profile with username
@@ -43,37 +43,37 @@ class AuthViewModel(private val auth: FirebaseAuth) : ViewModel() {
 
     // methods for fragment to call
 
-    fun login(email: String, password: String) {
+    fun performLogin(email: String, password: String) {
         if (email.isNotEmpty() && password.isNotEmpty()) {
-            signIn(email, password)
+            firebaseSignIn(email, password)
         } else {
             invalidAuth("Please enter valid email and password")
         }
     }
 
-    fun register(username: String, email: String, password: String) {
+    fun performRegistration(username: String, email: String, password: String) {
         if (username.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty()) {
-            signUp(username, email, password)
+            firebaseSignUp(username, email, password)
         } else {
             invalidAuth("Please enter valid username, email and password")
         }
     }
 
-    fun checkAuthentication() {
+    fun updateUserAuthState() {
         if (auth.currentUser != null) {
             _authState.value = AuthState.AUTHENTICATED
         }
     }
 }
 
-class AuthViewModelFactory(auth: FirebaseAuth) :
+class CloudAuthViewModelFactory(auth: FirebaseAuth) :
     ViewModelProvider.Factory {
     private val auth = auth
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(AuthViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(CloudAuthViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return AuthViewModel(auth) as T
+            return CloudAuthViewModel(auth) as T
         }
-        throw IllegalArgumentException("Unable to construct viewmodel")
+        throw IllegalArgumentException("Unable to construct cloud auth viewmodel")
     }
 }

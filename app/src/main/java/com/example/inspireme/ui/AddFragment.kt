@@ -13,17 +13,14 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
-/**
- * A simple [Fragment] subclass as the second destination in the navigation.
- */
 class AddFragment : Fragment() {
 
     private var _binding: FragmentAddBinding? = null
     private val binding get() = _binding!!
     private val auth by lazy { Firebase.auth }
-    private val db by lazy { Firebase.firestore }
-    private val cloudViewModel: CloudViewModel by activityViewModels {
-        CloudViewModelFactory(auth, db)
+    private val fs by lazy { Firebase.firestore }
+    private val firebaseViewModel: FirebaseViewModel by activityViewModels {
+        FirebaseViewModelFactory(auth, fs)
     }
 
     override fun onCreateView(
@@ -32,7 +29,7 @@ class AddFragment : Fragment() {
     ): View {
 
         _binding = FragmentAddBinding.inflate(inflater, container, false)
-        binding.cloudViewModel = cloudViewModel
+        binding.vm = firebaseViewModel
         binding.lifecycleOwner = this
         return binding.root
 
@@ -40,28 +37,28 @@ class AddFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        cloudViewModel.checkAuthentication()
+        firebaseViewModel.updateUserAuthState()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        cloudViewModel.authState.observe(viewLifecycleOwner) {
+        firebaseViewModel.authState.observe(viewLifecycleOwner) {
             if (it != AuthState.AUTHENTICATED) {
                 startActivity(Intent(requireContext(), AuthActivity::class.java))
                 requireActivity().finish()
             }
         }
-        cloudViewModel.postUploadStatus.observe(viewLifecycleOwner) {
-            if (it == PostUploadStatus.IN_PROGRESS) {
+        firebaseViewModel.postUploadStatus.observe(viewLifecycleOwner) {
+            if (it == CloudUploadStatus.IN_PROGRESS) {
                 binding.tvPostStatus.text = "uploading post to cloud ☁️"
-            }else if (it == PostUploadStatus.SUCCESS) {
+            }else if (it == CloudUploadStatus.SUCCESS) {
                 binding.editPostTitle.text?.clear()
                 binding.editPostContent.text?.clear()
             }
         }
         binding.fabSave.setOnClickListener {
-            cloudViewModel.addPost(
+            firebaseViewModel.addNewPost(
                 binding.editPostTitle.text.toString(),
                 binding.editPostContent.text.toString()
             )

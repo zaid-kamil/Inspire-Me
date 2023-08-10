@@ -12,9 +12,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.inspireme.AuthActivity
 import com.example.inspireme.R
-import com.example.inspireme.adapters.PostAdapter
+import com.example.inspireme.adapters.FirePostAdapter
 import com.example.inspireme.databinding.FragmentDisplayBinding
-import com.example.inspireme.models.Post
+import com.example.inspireme.models.FirePost
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -28,8 +28,8 @@ class DisplayFragment : Fragment() {
     private val binding get() = _binding!!
     private val auth by lazy { Firebase.auth }
     private val db by lazy { Firebase.firestore }
-    private val cloudViewModel: CloudViewModel by activityViewModels {
-        CloudViewModelFactory(auth, db)
+    private val firebaseViewModel: FirebaseViewModel by activityViewModels {
+        FirebaseViewModelFactory(auth, db)
     }
 
     override fun onCreateView(
@@ -38,7 +38,7 @@ class DisplayFragment : Fragment() {
     ): View {
 
         _binding = FragmentDisplayBinding.inflate(inflater, container, false)
-        binding.cloudViewModel = cloudViewModel
+        binding.vm = firebaseViewModel
         binding.lifecycleOwner = this
         return binding.root
 
@@ -46,44 +46,44 @@ class DisplayFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        cloudViewModel.checkAuthentication()
+        firebaseViewModel.updateUserAuthState()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        cloudViewModel.getPosts()
+        firebaseViewModel.getAllFirePosts()
 
-        cloudViewModel.authState.observe(viewLifecycleOwner) {
+        firebaseViewModel.authState.observe(viewLifecycleOwner) {
             if (it != AuthState.AUTHENTICATED) {
                 startActivity(Intent(requireContext(), AuthActivity::class.java))
                 requireActivity().finish()
             }
         }
 
-        cloudViewModel.postLoadingStatus.observe(viewLifecycleOwner) {
+        firebaseViewModel.postLoadingStatus.observe(viewLifecycleOwner) {
             if (it == PostLoadingStatus.IN_PROGRESS) {
                 binding.progressBar.visibility = View.VISIBLE
             } else {
                 if (it == PostLoadingStatus.SUCCESS) {
                     binding.rvPostList.layoutManager = LinearLayoutManager(requireContext())
-                    val postAdapter = PostAdapter {
+                    val firePostAdapter = FirePostAdapter {
                         showPostDialog(it)
                     }
-                    binding.rvPostList.adapter = postAdapter
-                    postAdapter.submitList(cloudViewModel.posts.value)
+                    binding.rvPostList.adapter = firePostAdapter
+                    firePostAdapter.submitList(firebaseViewModel.posts.value)
                 }
                 binding.progressBar.visibility = View.GONE
             }
         }
 
         binding.floatingActionButton.setOnClickListener {
-            cloudViewModel.msg.value = ""
+            firebaseViewModel.response.value = ""
             findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
         }
     }
 
-    private fun showPostDialog(it: Post) {
+    private fun showPostDialog(it: FirePost) {
         val dialog = AlertDialog.Builder(requireContext())
         dialog.setTitle(it.title)
         dialog.setMessage(it.content)

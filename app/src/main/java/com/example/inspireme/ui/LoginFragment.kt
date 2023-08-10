@@ -11,7 +11,6 @@ import androidx.navigation.fragment.findNavController
 import com.example.inspireme.MainActivity
 import com.example.inspireme.R
 import com.example.inspireme.databinding.FragmentLoginBinding
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -20,7 +19,7 @@ class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     val binding get() = _binding!!
     private val auth by lazy { Firebase.auth }
-    private val viewModel: AuthViewModel by activityViewModels { AuthViewModelFactory(auth) }
+    private val vm: CloudAuthViewModel by activityViewModels { CloudAuthViewModelFactory(auth) }
 
 
     override fun onCreateView(
@@ -28,7 +27,7 @@ class LoginFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
-        binding.authViewModel = viewModel
+        binding.vm = vm
         binding.lifecycleOwner = this
         return binding.root
 
@@ -36,12 +35,12 @@ class LoginFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        viewModel.checkAuthentication()
+        vm.updateUserAuthState()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.authState.observe(viewLifecycleOwner) {
+        vm.authState.observe(viewLifecycleOwner) {
             if (it == AuthState.AUTHENTICATED) {
                 startActivity(Intent(requireContext(), MainActivity::class.java))
                 requireActivity().finish()
@@ -49,13 +48,13 @@ class LoginFragment : Fragment() {
         }
         binding.apply {
             btnLogin.setOnClickListener {
-                viewModel.login(
+                vm.performLogin(
                     editEmail.text.toString(),
                     editPassword.text.toString()
                 )
             }
             btnCreateAccount.setOnClickListener {
-                viewModel.authMsg.value = ""
+                vm.authMsg.value = ""
                 findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
             }
         }

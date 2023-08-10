@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.inspireme.MainActivity
 import com.example.inspireme.databinding.FragmentRegisterBinding
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -17,14 +16,14 @@ class RegisterFragment : Fragment() {
     private var _binding: FragmentRegisterBinding? = null
     val binding get() = _binding!!
     private val auth by lazy { Firebase.auth }
-    private val viewModel: AuthViewModel by activityViewModels { AuthViewModelFactory(auth) }
+    private val vm: CloudAuthViewModel by activityViewModels { CloudAuthViewModelFactory(auth) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentRegisterBinding.inflate(inflater, container, false)
-        binding.authViewModel = viewModel
+        binding.vm = vm
         binding.lifecycleOwner = this
         return binding.root
 
@@ -32,12 +31,12 @@ class RegisterFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        viewModel.checkAuthentication()
+        vm.updateUserAuthState()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.authState.observe(viewLifecycleOwner) {
+        vm.authState.observe(viewLifecycleOwner) {
             if (it == AuthState.AUTHENTICATED) {
                 startActivity(Intent(requireContext(), MainActivity::class.java))
                 requireActivity().finish()
@@ -45,7 +44,7 @@ class RegisterFragment : Fragment() {
         }
         binding.apply {
             btnRegister.setOnClickListener {
-                viewModel.register(
+                vm.performRegistration(
                     editUsername.text.toString(),
                     editRegEmail.text.toString(),
                     editRegPassword.text.toString(),
